@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="711.css">
+    <link rel="stylesheet" media="screen and (min-width: 768px)" href="711.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js library -->
+    <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <title>Consumption Tracker</title>
+</head>
+<body>
+    <header>
+        <h1>ELECTRCITY CONSUMPTION TRACKER</h1>
+        <div id="admin-login">
+            <button onclick="openAdminPage()">Admin Login</button>
+        </div>
+    </header>
+    
+    <!-- Buttons for navigation -->
+    <div id="nav-buttons">
+        <button onclick="scrollToSection('search')">Search</button>
+        <button onclick="scrollToSection('search')">Consumption</button>
+        <button onclick="scrollToSection('consumption-chart')">Consumption Chart</button>
+
+        <button onclick="scrollToSection('payment')">Payment</button>
+        <button onclick="scrollToSection('tips')">Energy Saving Tips</button>
+        <button onclick="scrollToSection('feedback')">Feedback</button>
+    </div>
+    <!-- Image Section -->
+    <section id="image-section">
+        
+        <div class="scrolling-images">
+            <img src="11.jpg" class="image">
+            <img src="12.jpg" class="image">
+            <img src="13.jpg" class="image">
+            <img src="17.jpg" class="image">
+            <img src="14.jpg" class="image">
+            <img src="15.jpg" class="image">
+            <img src="16.jpg" class="image">
+            <img src="17.jpg" class="image">
+            <!-- Add more images as needed -->
+        </div>
+    </section>
+    
+
+    <!-- Consumer Search Section -->
+    <section id="search">
+        <h1>Consumer Search</h1>
+        <label for="consumerId">Consumer ID:</label><br>
+        <input type="text" id="consumerId" name="consumerId"><br>
+        <button onclick="searchConsumer()">Search</button><br>
+        <button id="printButton" onclick="printBill()">Print Bill</button>
+        <div id="result"></div>
+    </section>
+    <script>
+        // JavaScript function for search functionality
+        function searchConsumer() {
+            // Simulating search results
+            var resultContainer = document.getElementById("result");
+            resultContainer.innerHTML = "<p>Search results here...</p>";
+        
+            // Show the result container
+            resultContainer.style.display = "block";
+        }
+        </script>
+ 
+
+
+
+    <!-- Graphical Representation -->
+    <section id="consumption-chart">
+        <h2></h2><br><br>
+        <canvas id="myChart" width="400" height="200"></canvas>
+    </section>
+
+    <!-- Script Section -->
+    <script>
+        // Define tariff rates and slabs (in rupees)
+        var slab1Rate = 5; // Rate for first 100 units
+        var slab2Rate = 7; // Rate for next 200 units
+        var slab3Rate = 9; // Rate for units above 300
+
+        // Function to update chart with data
+        function updateChart(consumerId, prevMonthReading, currentMonthReading, unitsConsumedThisMonth, totalAmount) {
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Consumer ID: ' + consumerId, 'Previous Month Reading', 'Current Month Reading', 'Units Consumed This Month', 'Total Amount'],
+                    datasets: [{
+                        label: 'Consumption Analysis',
+                        data: [prevMonthReading, currentMonthReading, unitsConsumedThisMonth, totalAmount],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        }
+
+        // Function to handle consumer search
+        function searchConsumer() {
+            var consumerId = document.getElementById("consumerId").value;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        var consumer = JSON.parse(xhr.responseText);
+                        var resultDiv = document.getElementById("result");
+
+                        // Retrieve previous and current month readings from the consumer object
+                        var prevMonthReading = consumer.prev_month_reading;
+                        var currentMonthReading = consumer.current_month_reading;
+
+                        // Calculate units consumed in the current month
+                        var unitsConsumedThisMonth = currentMonthReading - prevMonthReading;
+
+                        // Calculate total amount based on tariff slabs
+                        var totalAmount = 0;
+                        if (unitsConsumedThisMonth <= 100) {
+                            totalAmount = unitsConsumedThisMonth * slab1Rate;
+                        } else if (unitsConsumedThisMonth <= 300) {
+                            totalAmount = (100 * slab1Rate) + ((unitsConsumedThisMonth - 100) * slab2Rate);
+                        } else {
+                            totalAmount = (100 * slab1Rate) + (200 * slab2Rate) + ((unitsConsumedThisMonth - 300) * slab3Rate);
+                        }
+
+                        // Apply additional charges or rebates if applicable (you can add this logic)
+
+                        resultDiv.innerHTML = "<p><strong>Consumer ID:</strong> " + consumer.consumer_id + "</p>" +
+                            "<p><strong>Previous Month Reading:</strong> " + prevMonthReading + "</p>" +
+                            "<p><strong>Current Month Reading:</strong> " + currentMonthReading + "</p>" +
+                            "<p><strong>Units Consumed This Month:</strong> " + unitsConsumedThisMonth + "</p>" +
+                            "<p><strong>Total Amount (INR):</strong> " + totalAmount.toFixed(2) + "</p>" + // Fixed to 2 decimal places
+                            "<p><strong>Admin Username:</strong> " + consumer.admin_username + "</p>" +
+                            "<p><strong>Updated At:</strong> " + consumer.updated_at + "</p>" +
+                            "<p><strong>Place:</strong> " + consumer.place + "</p>";
+
+                        // Update chart with consumer data
+                        updateChart(consumer.consumer_id, prevMonthReading, currentMonthReading, unitsConsumedThisMonth, totalAmount);
+                    } else {
+                        document.getElementById("result").innerHTML = "<p>Error: Consumer ID not found or there was an error in the request.</p>";
+                    }
+                }
+            };
+            xhr.open("GET", "consumer_details1.hp.php?id=" + consumerId, true);
+            xhr.send();
+        }
+
+        function printBill() {
+            window.print();
+        }
+
+        // Function for Bill Payment Integration
+        function payBill() {
+            // Implement payment integration logic here
+            alert("Placeholder for Bill Payment Integration");
+        }
+
+        // Function for Feedback System
+        document.getElementById("feedbackForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var feedbackMsg = document.getElementById("feedbackMsg").value;
+            // Implement feedback submission logic here
+            alert("Feedback submitted: " + feedbackMsg);
+        });
+
+        // Function to open admin page
+        function openAdminPage() {
+            // Redirect to admin.html
+            window.location.href = "panda.html";
+        }
+    </script>
+        <!-- Notification System Section -->
+        <h2>Consumption Chart</h2>
+        <form method="post" action="graph1.php">
+            <label for="consumer_id">Enter Consumer ID:</label>
+            <input type="text" id="consumer_id" name="consumer_id">
+            <button type="submit">Generate Graph</button>
+        </form>
+       
+    
+        <!-- Energy Saving Tips Section -->
+        <section id="tips">
+            <h2>Energy Saving Tips</h2>
+            <button onclick="getEnergyTips()">Get Tips</button>
+        </section>
+    
+        <script>
+            function getEnergyTips() {
+                window.location.href = "https://www.crompton.co.in/blogs/home-appliances/10-easy-steps-to-save-electricity-bill/";
+            }
+        </script>
+    
+    
+    
+    
+      
+        
+    
+        <!-- Bill Payment Integration Section -->
+        <section id="payment">
+            <h2>Bill Payment</h2>
+            <p>Click the button below to proceed with the payment.</p>
+            <button onclick="requestPaymentDetails()">Pay Bill</button>
+        </section>
+        
+        <script>
+            function requestPaymentDetails() {
+                var consumerID = prompt("Please enter your consumer ID:");
+                var amount = prompt("Please enter the amount to pay:");
+                
+        
+                if (amount !== null && consumerID !== null) {
+                    amount = parseFloat(amount);
+                    if (!isNaN(amount) && amount > 0 && consumerID.trim() !== "") {
+                        // Dummy logic to simulate payment processing
+                        var paymentMessage = `Payment of RS:${amount.toFixed(2)} for consumer ID ${consumerID} successful!`;
+                        alert(paymentMessage);
+                        // Additional logic (e.g., sending payment data to server) can be added here
+                    } else {
+                        alert("Please enter valid amount and consumer ID.");
+                    }
+                }
+            }
+        </script>
+        
+    
+        <!-- Feedback System Section -->
+        <section id="feedback">
+            <h2>Feedback System</h2>
+            <form id="feedbackForm" action="submit_feedback.php" method="post">
+                <textarea id="feedbackMsg" name="feedbackMsg" rows="4" cols="50" placeholder="Enter your feedback"></textarea><br>
+                <button type="submit">Submit Feedback</button>
+            </form>
+        </section>
+
+    <script>
+        // Placeholder for Notification System
+        document.getElementById("notification").innerHTML = "<p>Notification System is under development.</p>";
+
+        
+        // Placeholder for Energy Saving Tips
+        document.getElementById("tips").innerHTML = "<p>Here are some energy-saving tips:</p><ul><li>Turn off lights when not in use.</li><li>Use energy-efficient appliances.</li><li>Unplug devices when fully charged.</li></ul>";
+
+        // Placeholder for Feedback System
+        document.getElementById("feedback").innerHTML = "<p>Please provide your feedback:</p><form id='feedbackForm'><textarea id='feedbackMsg' rows='4' cols='50' placeholder='Enter your feedback'></textarea><br><button type='submit'>Submit Feedback</button></form>";
+    </script>
+</body>
+</html>

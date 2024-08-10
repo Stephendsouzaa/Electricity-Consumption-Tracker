@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="admin.css">
+    <title>Admin Page</title>
+</head>
+<body>
+    <header>
+        <h1>Welcome Admin</h1>
+        <div id="admin-content">
+            <div id="login-form" style="display: block;">
+                <h2>Login</h2>
+                <form method="post" action="login.php">
+                    <label for="admin-username">Username:</label>
+                    <input type="text" id="admin-username" name="admin-username" required>
+                    <label for="admin-password">Password:</label>
+                    <input type="password" id="admin-password" name="admin-password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <p><a href="forgot_password.php">Forgot your password?</a></p>
+                <p>Don't have an account? <a href="#" onclick="toggleLoginForm(false)">Create one</a>.</p>
+            </div>
+
+            <div id="signup-form" style="display: none;">
+                <h2>Create Account</h2>
+                <form method="post" action="create_account.php" id="create-account-form">
+                    <label for="new-username">New Username:</label>
+                    <input type="text" id="new-username" name="new-username" required>
+                    <label for="new-password">New Password:</label>
+                    <input type="password" id="new-password" name="new-password" required>
+                    <label for="confirm-password">Confirm Password:</label>
+                    <input type="password" id="confirm-password" name="confirm-password" required>
+                    <button type="submit">Create Account</button>
+                </form>
+                <p>Already have an account? <a href="#" onclick="toggleLoginForm(true)">Login</a>.</p>
+            </div>
+
+            <div id="electricity-details" style="display: none;">
+                <h2>Electricity Details</h2>
+                <form method="post" action="add_electricity_details.php">
+                    <label for="consumer-id">Consumer ID:</label>
+                    <input type="text" id="consumer-id" name="consumer-id" required>
+                    <label for="place">Place:</label>
+                    <input type="text" id="place" name="place" required>
+                    <label for="consumption-date">Date:</label>
+                    <input type="date" id="consumption-date" name="consumption-date" required>
+                    <label for="consumption-amount">Amount (kWh):</label>
+                    <input type="number" id="consumption-amount" name="consumption-amount" step="0.01" required>
+
+                    <button type="submit">Add Details</button><br>
+                    <button type="button" onclick="clearForm()">Clear</button><br><br>
+                </form>
+
+                <div id="details-table-container">
+                    <table id="details-table"></table>
+                </div>
+
+                <div id="summary"></div>
+
+                <button onclick="logoutAdmin()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <script src="admin.js"></script>
+</body>
+</html>
